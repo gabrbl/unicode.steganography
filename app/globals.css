@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Carbón neutro: sin tinte verde, para que el fósforo lea como emisión. */
+  --color-bg: #0a0a0b;
+  --color-surface: #101113;
+  --color-raised: #17181a;
+
+  /* line = divisor decorativo. line-bright = borde de control, >=3.3:1 en toda superficie (WCAG 1.4.11). */
+  --color-line: #2c3d33;
+  --color-line-bright: #53715e;
+
+  /* Rampa de texto: 6.6:1 / 8.6:1 / 15.6:1 sobre --color-bg. */
+  --color-dim: #869a8d;
+  --color-muted: #9db0a4;
+  --color-text: #dfe6e1;
+
+  --color-phosphor: #4ade80;
+  --color-phosphor-dim: #33a15f;
+  --color-amber: #f0b429;
+  --color-danger: #fb7185;
+  --color-cyan: #5eead4;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background-color: var(--color-bg);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  /* Un halo verde muy tenue, como el fósforo de un CRT encendido. */
+  background-image: radial-gradient(
+    120% 80% at 50% -10%,
+    color-mix(in srgb, var(--color-phosphor) 4%, transparent),
+    transparent 60%
+  );
+  background-attachment: fixed;
+}
+
+/* Líneas de barrido. Estáticas a propósito: parpadear sería ruido, no carácter. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  opacity: 0.45;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-phosphor) 28%, transparent);
+  color: var(--color-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-phosphor);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-bright) transparent;
+}
+
+@keyframes caret-blink {
+  0%, 45% { opacity: 1; }
+  50%, 95% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.caret::after {
+  content: "_";
+  color: var(--color-phosphor);
+  animation: caret-blink 1.2s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret::after {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* El marcador nativo de <summary> se sustituye por uno propio en el marcado. */
+summary {
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
