@@ -47,11 +47,11 @@ export function StegoApp() {
               onClick={() => setActive(tab.id)}
               onKeyDown={onKeyDown}
               className={cn(
-                'flex-1 border-r border-line px-4 py-3 text-xs tracking-[0.2em] uppercase last:border-r-0',
+                'min-h-11 flex-1 border-r border-line px-4 py-3 text-xs tracking-[0.2em] uppercase last:border-r-0',
                 'transition-colors duration-150',
                 selected
                   ? 'bg-phosphor/10 text-phosphor'
-                  : 'text-dim hover:bg-surface hover:text-muted',
+                  : 'text-dim hover:bg-surface hover:text-muted active:bg-surface',
               )}
             >
               {selected ? <span className="mr-2 text-phosphor-dim">▚</span> : null}
@@ -68,7 +68,7 @@ export function StegoApp() {
           id={`panel-${tab.id}`}
           aria-labelledby={`tab-${tab.id}`}
           hidden={tab.id !== active}
-          className="p-5 sm:p-7"
+          className="p-4 sm:p-7"
         >
           {tab.id === 'encode' ? <EncodePanel /> : <DecodePanel />}
         </div>

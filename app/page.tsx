@@ -3,7 +3,7 @@ import { StegoApp } from '@/components/stego-app';
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <details className="group border border-line bg-surface">
-      <summary className="cursor-pointer px-4 py-3 text-[11px] tracking-[0.16em] text-muted uppercase transition-colors hover:text-text">
+      <summary className="flex min-h-11 cursor-pointer items-center px-4 py-3 text-[11px] tracking-[0.16em] text-muted uppercase transition-colors hover:text-text active:text-text">
         <span className="mr-2 text-phosphor-dim group-open:hidden">▶</span>
         <span className="mr-2 hidden text-phosphor-dim group-open:inline">▼</span>
         {title}
@@ -17,7 +17,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10 sm:px-6 sm:py-14">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-14">
       <header className="flex flex-col gap-3">
         <h1 className="text-lg tracking-[0.18em] text-phosphor uppercase sm:text-xl">
           <span className="mr-2 text-phosphor-dim">▚</span>

@@ -58,7 +58,9 @@ export function CopyButton({ value, disabled }: { value: string; disabled?: bool
   }
 
   return (
-    <Button type="button" onClick={copy} disabled={disabled} className="min-w-[8.5rem]">
+    // El ancho mínimo cubre la etiqueta más larga ('no se pudo copiar'), para que
+    // el botón no cambie de tamaño al pasar de un estado a otro.
+    <Button type="button" onClick={copy} disabled={disabled} className="min-w-[11.5rem]">
       <span aria-live="polite">{MESSAGES[state]}</span>
     </Button>
   );

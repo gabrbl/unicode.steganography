@@ -36,13 +36,27 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-mono);
-  /* Un halo verde muy tenue, como el fósforo de un CRT encendido. */
+  /* viewportFit: 'cover' lleva el contenido al borde; aquí se recupera el hueco
+     del notch y de la home indicator. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Un halo verde muy tenue, como el fósforo de un CRT encendido.
+   Va en un pseudo-elemento fijo y no en `background-attachment: fixed`, que en
+   iOS Safari está roto desde hace años y fuerza repintados durante el scroll. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-image: radial-gradient(
     120% 80% at 50% -10%,
     color-mix(in srgb, var(--color-phosphor) 4%, transparent),
     transparent 60%
   );
-  background-attachment: fixed;
 }
 
 /* Líneas de barrido. Estáticas a propósito: parpadear sería ruido, no carácter. */
@@ -60,6 +74,14 @@ body::after {
     transparent 4px
   );
   opacity: 0.45;
+}
+
+/* En pantallas de densidad alta el patrón de 1px sobre 4px bate contra la rejilla
+   física del panel y produce moiré. En móvil se rebaja hasta que solo insinúa. */
+@media (max-width: 640px) {
+  body::after {
+    opacity: 0.25;
+  }
 }
 
 ::selection {

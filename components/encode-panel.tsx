@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { Badge, Callout } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/ui/copy-button';
-import { PasswordField, TextAreaField } from '@/components/ui/field';
+import { OUTPUT_CONTROL, PasswordField, TextAreaField } from '@/components/ui/field';
+import { PasteButton } from '@/components/ui/paste-button';
 import { HexDump } from '@/components/hex-dump';
 import { cn } from '@/lib/cn';
 import { assessPassword, type StrengthLevel } from '@/lib/password-strength';
@@ -91,7 +92,7 @@ export function EncodePanel() {
   const invisibleWeight = output ? encoder.encode(bytesToSelectors(output.payload)).length : 0;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5 sm:gap-6">
       <TextAreaField
         label="mensaje visible"
         rows={3}
@@ -99,6 +100,7 @@ export function EncodePanel() {
         onChange={(event) => setVisibleText(event.target.value)}
         placeholder="Lo que cualquiera verá al leer el texto"
         hint="Si lo dejas vacío se usará un único carácter como portador."
+        trailing={<PasteButton onPaste={setVisibleText} />}
       />
 
       <TextAreaField
@@ -108,7 +110,10 @@ export function EncodePanel() {
         onChange={(event) => setSecret(event.target.value)}
         placeholder="Lo que quedará escondido entre los caracteres invisibles"
         trailing={
-          <span className="text-[11px] text-dim">{encoder.encode(secret).length} bytes</span>
+          <span className="flex items-center gap-3">
+            <span className="text-[11px] text-dim">{encoder.encode(secret).length} bytes</span>
+            <PasteButton onPaste={setSecret} />
+          </span>
         }
       />
 
@@ -163,7 +168,7 @@ export function EncodePanel() {
                 rows={3}
                 value={output.text}
                 onFocus={(event) => event.target.select()}
-                className="w-full resize-y border border-phosphor-dim bg-raised px-3 py-2.5 text-sm leading-relaxed text-text"
+                className={OUTPUT_CONTROL}
               />
 
               <div className="flex flex-wrap items-center gap-3">

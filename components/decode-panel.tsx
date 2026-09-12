@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { Badge, Callout } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/ui/copy-button';
-import { PasswordField, TextAreaField } from '@/components/ui/field';
+import { OUTPUT_CONTROL, PasswordField, TextAreaField, TRAILING_BUTTON } from '@/components/ui/field';
+import { PasteButton } from '@/components/ui/paste-button';
 import { inspect, reveal, revealPlain, type RevealResult } from '@/lib/stego';
 
 function DetectionBanner({ input }: { input: string }) {
@@ -73,7 +74,7 @@ function Result({ result }: { result: RevealResult }) {
             rows={4}
             value={result.secret}
             onFocus={(event) => event.target.select()}
-            className="w-full resize-y border border-phosphor-dim bg-raised px-3 py-2.5 text-sm leading-relaxed text-text"
+            className={OUTPUT_CONTROL}
           />
 
           <div>
@@ -110,7 +111,7 @@ export function DecodePanel() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5 sm:gap-6">
       <TextAreaField
         label="texto a examinar"
         rows={4}
@@ -118,16 +119,20 @@ export function DecodePanel() {
         onChange={(event) => setInput(event.target.value)}
         placeholder="Pega aquí el texto que crees que esconde algo"
         hint="Se analiza mientras escribes. Nada sale de tu navegador."
+        // El payload viaja en caracteres invisibles: la autocorrección y la
+        // puntuación inteligente de iOS podrían alterarlo al seguir escribiendo.
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
         trailing={
-          input.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => setInput('')}
-              className="text-[11px] tracking-[0.14em] text-muted uppercase transition-colors hover:text-text"
-            >
-              limpiar
-            </button>
-          ) : null
+          <span className="flex items-center gap-2">
+            <PasteButton onPaste={setInput} />
+            {input.length > 0 ? (
+              <button type="button" onClick={() => setInput('')} className={TRAILING_BUTTON}>
+                limpiar
+              </button>
+            ) : null}
+          </span>
         }
       />
 
