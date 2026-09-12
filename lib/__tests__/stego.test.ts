@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CARRIER, hide, inspect, reveal, revealPlain } from '../stego';
-import { ENCRYPTED_OVERHEAD } from '../payload';
+import {
+  ENCRYPTED_OVERHEAD,
+  KDF_PBKDF2_SHA256_600K,
+  MAGIC_ENCRYPTED,
+  MAGIC_PLAIN,
+} from '../payload';
 import { bytesToSelectors, stripVariationSelectors } from '../variation-selectors';
 
 /**
@@ -236,5 +241,52 @@ describe('revealPlain', () => {
   it('coincide con reveal() cuando no se aporta contraseña', async () => {
     const { text } = await hide({ visibleText: 'hola', secret: 'x' });
     expect(revealPlain(text)).toEqual(await reveal(text));
+  });
+});
+
+/**
+ * El salt, el iv y el criptograma son bytes pseudoaleatorios: uno de cada 256
+ * vale 0xA1, el magic de texto plano. Cada uno de esos bytes abre un candidato
+ * «plano» espurio que no debe adelantar a la carga cifrada real del offset 0.
+ *
+ * Las cargas se montan a mano en lugar de con hide() porque con bytes aleatorios
+ * el fallo solo aparecía una de cada doce ejecuciones.
+ */
+describe('revealPlain frente a magic espurios dentro de una carga cifrada', () => {
+  /** Carga cifrada bien formada, rellena de ceros salvo lo que planten los tests. */
+  function cargaCifrada(extra: number): Uint8Array {
+    const bytes = new Uint8Array(ENCRYPTED_OVERHEAD + extra);
+    bytes[0] = MAGIC_ENCRYPTED;
+    bytes[1] = KDF_PBKDF2_SHA256_600K;
+    return bytes;
+  }
+
+  it('no deja que un 0xA1 en el último byte se lea como carga plana vacía', () => {
+    const bytes = cargaCifrada(4);
+    bytes[bytes.length - 1] = MAGIC_PLAIN;
+
+    expect(revealPlain('hola' + bytesToSelectors(bytes))).toEqual({
+      status: 'password-required',
+    });
+  });
+
+  it('no deja que un 0xA1 seguido de UTF-8 válido se lea como el secreto', () => {
+    const bytes = cargaCifrada(8);
+    const señuelo = new TextEncoder().encode('basura');
+    bytes[ENCRYPTED_OVERHEAD - 1] = MAGIC_PLAIN;
+    bytes.set(señuelo, ENCRYPTED_OVERHEAD);
+
+    expect(revealPlain('hola' + bytesToSelectors(bytes))).toEqual({
+      status: 'password-required',
+    });
+  });
+
+  it('mantiene inspect() y revealPlain() de acuerdo sobre la misma entrada', () => {
+    const bytes = cargaCifrada(4);
+    bytes[bytes.length - 1] = MAGIC_PLAIN;
+    const text = 'hola' + bytesToSelectors(bytes);
+
+    expect(inspect(text)?.encrypted).toBe(true);
+    expect(revealPlain(text).status).toBe('password-required');
   });
 });

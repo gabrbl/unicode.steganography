@@ -162,19 +162,27 @@ export function revealPlain(text: string): RevealResult {
   const candidates = findCandidates(text);
   if (candidates.length === 0) return { status: 'none' };
 
-  let sawEncrypted = false;
-
+  // Los candidatos vienen ordenados por offset y gana el primero que resuelva.
+  //
+  // El orden importa: el salt, el iv y el criptograma de una carga cifrada son
+  // ~50 bytes pseudoaleatorios, así que alguno vale 0xA1 —el magic de texto
+  // plano— una de cada seis veces. Eso genera candidatos «planos» espurios en
+  // offsets posteriores. Si se les diera prioridad taparían la carga cifrada
+  // real del offset 0, y como reveal() corta cuando el estado no es
+  // 'password-required', ni siquiera la contraseña correcta la recuperaría.
+  //
+  // El caso simétrico no preocupa: para que un candidato cifrado espurio tapara
+  // una carga plana real haría falta la pareja exacta 0xA2 0x01 dentro de datos
+  // que son UTF-8 válido, y ahí 0xA2 solo aparece como byte de continuación,
+  // nunca seguido de un 0x01.
   for (const { payload } of candidates) {
-    if (payload.mode === 'encrypted') {
-      sawEncrypted = true;
-      continue;
-    }
+    if (payload.mode === 'encrypted') return { status: 'password-required' };
 
     const secret = decodeUtf8(payload.data);
     if (secret !== null) return { status: 'plain', secret };
   }
 
-  return sawEncrypted ? { status: 'password-required' } : { status: 'corrupt' };
+  return { status: 'corrupt' };
 }
 
 export async function reveal(
